@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo09.dao.JobDao">
+
+    <insert id="addJob" parameterType="com.demo09.entity.Job">
+        INSERT INTO job VALUES (#{job_id},#{job_name},#{requester_id},#{receiver_id},
+        #{job_status},#{request_time},#{receive_time},#{finish_time},#{captcha_src},#{captcha_result},
+        #{response_code},#{subtype_id})
+    </insert>
+
+    <select id="find" resultType="com.demo09.entity.Job">
+        SELECT * FROM job
+    </select>
+
+    <update id="schedule" parameterType="com.demo09.entity.Job">
+        UPDATE job SET receiver_id=#{receiver_id} WHERE job_id=#{job_id}
+    </update>
+
+    <update id="receiveJob" parameterType="com.demo09.entity.Job">
+        UPDATE job SET receive_time=#{receive_time},job_status='1' WHERE job_id=#{job_id}
+    </update>
+
+    <update id="finishJob" parameterType="com.demo09.entity.Job">
+        UPDATE job SET job_status=#{job_status},finish_time=#{finish_time},captcha_result=#{captcha_result} WHERE job_id=#{job_id}
+    </update>
+    
+    <select id="finishedJobs" parameterType="String" resultType="com.demo09.entity.Job">
+        SELECT * FROM job WHERE requester_id=#{requester_id} AND job_status='2'
+    </select>
+
+    <select id="unFinishedJob" parameterType="String" resultType="com.demo09.entity.Job">
+        SELECT * FROM job WHERE receiver_id=#{receiver_id} AND job_status='0'
+    </select>
+
+    <select id="findById" parameterType="String" resultType="com.demo09.entity.Job">
+        SELECT * FROM job WHERE job_id=#{job_id}
+    </select>
+
+    <select id="receiveJobs" parameterType="String" resultType="com.demo09.entity.Job">
+        SELECT * FROM job WHERE receiver_id=#{receiver_id}
+    </select>
+
+</mapper>

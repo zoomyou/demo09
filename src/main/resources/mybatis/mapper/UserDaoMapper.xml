@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo09.dao.UserDao">
+
+    <insert id="register" parameterType="com.demo09.entity.User">
+        INSERT INTO user VALUES (#{user_id},#{user_name},#{password},#{role},#{mail},#{status})
+    </insert>
+
+    <select id="login" parameterType="String" resultType="com.demo09.entity.User">
+        SELECT * FROM user WHERE user_name=#{user_name}
+    </select>
+
+    <select id="findAvailable" resultType="com.demo09.entity.User">
+        SELECT * FROM user WHERE status='0' AND role='打码人员'
+    </select>
+
+    <update id="Available" parameterType="String">
+        UPDATE user SET status='0' WHERE user_id=#{user_id}
+    </update>
+
+    <update id="UnAvailable" parameterType="String">
+        UPDATE user SET status='1' WHERE user_id=#{user_id}
+    </update>
+
+    <select id="findUsers" resultType="com.demo09.entity.User">
+        SELECT user_id,user_name,password,role,mail,status FROM user
+    </select>
+
+</mapper>

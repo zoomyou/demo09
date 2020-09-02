@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.springframework.boot:spring-boot-starter-websockt:2.1.9.RELESE">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot-starter-websockt/2.1.9.RELESE/spring-boot-starter-websockt-2.1.9.RELESE.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot-starter-websockt/2.1.9.RELESE/spring-boot-starter-websockt-2.1.9.RELESE-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot-starter-websockt/2.1.9.RELESE/spring-boot-starter-websockt-2.1.9.RELESE-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

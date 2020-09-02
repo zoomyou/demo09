@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>captchaBreaker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<!-- 打码客户端 -->
+<body>
+<div id="wrap" class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <div class="page-header">
+                <h1>
+                    Captcha_Breaker <small>欢迎用户<span v-show="user!=null">{{ user.user_name }}</span></small>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div class="col-md-4 column"></div>
+        <div class="col-md-4 column">
+            <form role="form">
+                <div>
+                    <label for="captcha">验证码图片</label><div id="captcha"></div>
+                </div>
+                <div class="form-group">
+                    <label for="result">识别结果</label><input id="result" v-model="job.captcha_result" type="text">
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4 column"></div>
+    </div>
+    <div class="row clearfix">
+        <div class="col-md-4 column">
+            <button class="btn btn-default" @click="receiveJob" type="button">接受任务</button>
+        </div>
+        <div class="col-md-4 column">
+            <button class="btn btn-default" @click="finishJob" type="button">提交结果</button>
+        </div>
+        <div class="col-md-4 column">
+            <button class="btn btn-default" @click="logout" type="button">安全退出</button>
+        </div>
+    </div>
+</div>
+</body>
+<script src="js/vue.js"></script>
+<script src="js/axios.js"></script>
+<script>
+    var socket;
+    var app = new Vue({
+        el:"#wrap",
+        data:{
+            user:{},
+            job:{},
+        },
+        methods:{
+//            接受任务开始计时
+            receiveJob(){
+                axios.post("/unFinishedJob",this.user).then(res=>{
+                    this.job = res.data;
+                    console.log("ok")
+                    axios.post("/receiveJob",this.job).then(res=>{
+                        alert(res.data.message);
+                    })
+                })
+            },
+//            完成任务
+            finishJob(){
+                axios.post("/finishJob",this.job).then(res=>{
+                    if (res.data.status == "200"){
+                        alert(res.data.message);
+                        this.job = {};
+                        console.log(this.job);
+                        document.querySelector("#captcha").innerHTML=''
+                        location.replace();
+                    }else {
+                        alert(res.data.message);
+                    }
+                })
+            },
+//            安全退出
+            logout(){
+                axios.post("/logout",this.user).then(res=>{
+                    if (res.data.status == "200"){
+                        alert(res.data.message);
+                        localStorage.clear();
+                        socket.close();
+                        location.href = "/index.html";
+                    }else {
+                        alert(res.data.message);
+                    }
+                })
+            }
+        },
+//        页面加载时建立websocket连接同时在浏览器的本地存储中存储用户名和用户id
+        created(){
+            var username = localStorage.getItem("user_name");
+            var userid = localStorage.getItem("user_id")
+            if (!username){
+                alert("用户未登录！");
+                location.href = "/index.html";
+            } else {
+                this.user.user_name = username;
+                this.user.user_id = userid;
+                if(typeof(WebSocket) == "undefined") {
+                    console.log("您的浏览器不支持WebSocket");
+                }else{
+                    console.log("您的浏览器支持WebSocket");
+                    var socketUrl="http://localhost:80/websocket/"+userid;
+                    socketUrl=socketUrl.replace("https","ws").replace("http","ws");
+                    console.log(socketUrl);
+//            在这里要将之前的会话连接先关闭销毁
+                    if(socket!=null){
+                        socket.close();
+                        socket=null;
+                    }
+//            再建立新的会话连接
+                    socket = new WebSocket(socketUrl);
+                    //打开事件
+                    socket.onopen = function() {
+                        console.log("websocket已打开");
+                        //socket.send("这是来自客户端的消息" + location.href + new Date());
+                    };
+                    //获得消息事件
+                    socket.onmessage = function(msg) {
+                        console.log(msg.data);
+                        var json = JSON.parse(msg.data);
+                        //发现消息进入    开始处理前端触发逻辑
+                        document.querySelector("#captcha").innerHTML='<img width="150px" src='+json.msg+'>'
+                    };
+                    //关闭事件
+                    socket.onclose = function() {
+                        console.log("websocket已关闭");
+                    };
+                    //发生了错误事件
+                    socket.onerror = function() {
+                        console.log("websocket发生了错误");
+                    }
+                }
+            }
+        }
+    })
+</script>
+</html>

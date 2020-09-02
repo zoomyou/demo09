@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>captchaBreaker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<!-- 请求端页面 -->
+<body>
+<div id="wrap" class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <div class="page-header">
+                <h1>
+                    Captcha_Breaker <small>欢迎用户<span v-show="user!=null">{{ user.user_name }}</span></small>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <div class="row clearfix">
+                <div class="col-md-12 column">
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="job_name">任务名称</label><input class="form-control" v-model="job.job_name" id="job_name" type="text" />
+                        </div>
+                        <!--<div class="form-group">-->
+                            <!--<label for="type">验证码类型</label><input class="form-control" v-model="job.subtype_id" id="type" type="text" />-->
+                        <!--</div>-->
+                        <div class="form-group">
+                            <label for="myPhoto">选择文件</label><input id="myPhoto" ref="myPhoto" type="file" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-md-4 column">
+                    <button class="btn btn-default" @click="addJob" type="button">发起任务</button>
+                </div>
+                <!--<div class="col-md-4 column">-->
+                    <!--<button class="btn btn-default" @click="refresh" type="button">刷新列表</button>-->
+                <!--</div>-->
+                <div class="col-md-4 column">
+                    <button class="btn btn-default" @click="logout" type="button">安全退出</button>
+                </div>
+            </div>
+            <table class="table">
+                <tr>
+                    <th>
+                        ID
+                    </th>
+                    <th>
+                        名称
+                    </th>
+                    <th>
+                        打码用户ID
+                    </th>
+                    <th>
+                        打码结果
+                    </th>
+                    <th>
+                        验证码类型
+                    </th>
+                </tr>
+                <tr v-for="(jobs,index) in jobs":key="jobs.job_id">
+                    <td>
+                        {{jobs.job_id}}
+                    </td>
+                    <td>
+                        {{jobs.job_name}}
+                    </td>
+                    <td>
+                        {{jobs.receiver_id}}
+                    </td>
+                    <td>
+                        {{jobs.captcha_result}}
+                    </td>
+                    <td>
+                        {{jobs.subtype_id}}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+<script src="js/vue.js"></script>
+<script src="js/axios.js"></script>
+<script>
+    var socket;
+    var app = new Vue({
+        el:"#wrap",
+        data:{
+            user:{},
+            job:{},
+            jobs:[],
+        },
+        methods:{
+//            test(){
+//                axios.post("/finishedJobs",this.user).then(res=>{
+//                    console.log(res.data);
+//                })
+//            },
+//            refresh(){
+//                console.log(this.user)
+//                console.log(this.jobs);
+//            },
+//
+            addJob(){
+                this.job.requester_id = this.user.user_id;
+                var files = this.$refs.myPhoto.files;
+                console.log(this.job);
+                var formData = new FormData();
+                formData.append("job_name",this.job.job_name);
+                formData.append("requester_id",this.job.requester_id);
+                formData.append("photo",files[0]);
+                console.log(formData)
+                axios({
+                    method:"post",
+                    url:"/addJob",
+                    data:formData,
+                    headers:{
+                        'content-type':'multipart/form-data'
+                    }
+                }).then(res=>{
+                    if (res.data.status == "200"){
+                        alert(res.data.message+"，识别图片的类型为"+res.data.type);
+                        this.job = {};
+                        console.log(this.job);
+                        var from = this.user.user_id;
+                        var to = res.data.receiverId;
+                        if (files.length>0){
+                            var fileReader = new FileReader();
+                            fileReader.readAsDataURL(files[0])
+                            fileReader.onload = function (e) {
+                                var s = JSON.stringify({fromId:from,toId:to,msg:e.target.result})
+                                console.log(s)
+                                socket.send(s)
+                            }
+                        }
+                        location.replace();
+                    } else {
+                        alert(res.data.message);
+                    }
+                })
+            },
+            logout(){
+                axios.post("/logout",this.user).then(res=>{
+                    if (res.data.status == "200"){
+                        alert(res.data.message);
+                        localStorage.clear();
+                        socket.close();
+                        location.href = "/index.html";
+                    }else {
+                        alert(res.data.message);
+                    }
+                })
+            }
+        },
+//        页面加载函数
+        created(){
+            var username = localStorage.getItem("user_name");
+            var userid = localStorage.getItem("user_id");
+
+            //先判断登录状态
+            if (!username){
+                alert("用户未登录！");
+                location.href = "/index.html";
+            } else {
+                this.user.user_name = username;
+                this.user.user_id = userid;
+
+                //再进行websocket连接
+                if(typeof(WebSocket) == "undefined") {
+                    console.log("您的浏览器不支持WebSocket");
+                }else{
+                    console.log("您的浏览器支持WebSocket");
+                    //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
+                    var socketUrl="http://localhost:80/websocket/"+userid;
+                    socketUrl=socketUrl.replace("https","ws").replace("http","ws");
+                    console.log(socketUrl);
+                    //在这里要将之前的会话连接先关闭销毁
+                    if(socket!=null){
+                        socket.close();
+                        socket=null;
+                    }
+                    //再建立新的会话连接
+                    socket = new WebSocket(socketUrl);
+                    //打开事件
+                    socket.onopen = function() {
+                        console.log("websocket已打开");
+                    };
+                    //关闭事件
+                    socket.onclose = function() {
+                        console.log("websocket已关闭");
+                    };
+                    //发生了错误事件
+                    socket.onerror = function() {
+                        console.log("websocket发生了错误");
+                    }
+                }
+
+                //对列表进行加载
+                var _this = this;
+                axios.post("/finishedJobs",this.user).then(res=>{
+                    console.log(res.data);
+                    _this.jobs = res.data;
+                    _this.user.user_id = userid;
+                    _this.user.user_name = username;
+                    console.log(_this.jobs)
+                })
+            }
+
+
+        }
+    })
+</script>
+</html>
