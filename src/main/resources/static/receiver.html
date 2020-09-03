@@ -78,7 +78,7 @@
 //                        alert(res.data.message);
 //                    }
 //                })
-                var result = document.querySelector("#result").innerText;
+                var result = document.getElementById('result').value;
                 var s = JSON.stringify({code:"2",result:result})
                 socket.send(s)
             },

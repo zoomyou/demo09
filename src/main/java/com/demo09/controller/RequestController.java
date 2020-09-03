@@ -86,7 +86,7 @@ public class RequestController {
             //6.如果返回可用信息则将图片保存至服务器
             try {
                 photo.transferTo(new File(newFilePath));
-
+                job.setJob_id(jobService.unFinishedJob(judge).getJob_id());
             } catch (IllegalStateException e){
                 e.printStackTrace();
             } catch (IOException e){
@@ -95,9 +95,10 @@ public class RequestController {
 
             //7.通过websocket向打码客户端进行推送
             try {
+                File file1 = new File(newFilePath);
                 JSONObject tuisong = new JSONObject();
                 tuisong.put("code","1");
-                tuisong.put("photo",photo);
+                tuisong.put("photo",file1);
                 WebSocketServer.webSocketMap.get(judge).sendMessage(JSON.toJSONString(tuisong));
                 receiveTime = System.currentTimeMillis();
                 //开始完成任务（向数据库插入记录）
@@ -115,6 +116,7 @@ public class RequestController {
                         //9.返回成功信息
                         job.setCaptcha_result(result);
                         finishTime = System.currentTimeMillis();
+                        jobService.finishJob(job);
                         status = "200";
                         message = "任务识别成功！";
                         res.put("mark",((receiveTime-finishTime)/1000)+"");
