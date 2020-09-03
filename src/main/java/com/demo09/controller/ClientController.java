@@ -80,6 +80,7 @@ public class ClientController {
 
         //2.对变量进行判断
         if (judge.equals("1")){
+            RequestController.result = job.getCaptcha_result();
             System.out.println("id为"+job.getReceiver_id()+"的用户得分为:");
             System.out.println(jobService.mark(job.getReceiver_id()));
             status = "200";

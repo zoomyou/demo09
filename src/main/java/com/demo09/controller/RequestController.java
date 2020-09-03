@@ -1,5 +1,6 @@
 package com.demo09.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.demo09.entity.Job;
 import com.demo09.entity.User;
@@ -20,6 +21,8 @@ import java.util.UUID;
 @CrossOrigin
 @Slf4j
 public class RequestController {
+
+    public static String result = "";
 
     private String filePath="C:/Users/10842/Desktop/demo09/src/main/resources/static/img/";
 
@@ -88,15 +91,45 @@ public class RequestController {
                 e.printStackTrace();
             }
 
+            //7.通过websocket向打码客户端进行推送
+            try {
+                JSONObject tuisong = new JSONObject();
+                tuisong.put("code","1");
+                tuisong.put("photo",photo);
+                WebSocketServer.webSocketMap.get(judge).sendMessage(JSON.toJSONString(tuisong));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            //8.等待结果进行返回
+            while (true){
+                try {
+                    Thread.sleep(1);
+                    if (result != null){
+                        break;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            //9.信息的返回
             status = "200";
             message = "发起任务成功！";
 
         }
 
+
+
+        //等待结果
+
+
         res.put("status",status);
         res.put("message",message);
-        res.put("receiverId",judge);
         res.put("type",classInfo);
+        res.put("result",result);
+
+        result = "";
 
         return res;
     }

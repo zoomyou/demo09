@@ -128,18 +128,18 @@
                     if (res.data.status == "200"){
                         alert(res.data.message+"，识别图片的类型为"+res.data.type);
                         this.job = {};
-                        console.log(this.job);
-                        var from = this.user.user_id;
-                        var to = res.data.receiverId;
-                        if (files.length>0){
-                            var fileReader = new FileReader();
-                            fileReader.readAsDataURL(files[0])
-                            fileReader.onload = function (e) {
-                                var s = JSON.stringify({fromId:from,toId:to,msg:e.target.result})
-                                console.log(s)
-                                socket.send(s)
-                            }
-                        }
+//                        console.log(this.job);
+//                        var from = this.user.user_id;
+//                        var to = res.data.receiverId;
+//                        if (files.length>0){
+//                            var fileReader = new FileReader();
+//                            fileReader.readAsDataURL(files[0])
+//                            fileReader.onload = function (e) {
+//                                var s = JSON.stringify({fromId:from,toId:to,msg:e.target.result})
+//                                console.log(s)
+//                                socket.send(s)
+//                            }
+//                        }
                         location.replace();
                     } else {
                         alert(res.data.message);
@@ -151,7 +151,7 @@
                     if (res.data.status == "200"){
                         alert(res.data.message);
                         localStorage.clear();
-                        socket.close();
+                        //socket.close();
                         location.href = "/index.html";
                     }else {
                         alert(res.data.message);
@@ -171,37 +171,35 @@
             } else {
                 this.user.user_name = username;
                 this.user.user_id = userid;
-
                 //再进行websocket连接
-                if(typeof(WebSocket) == "undefined") {
-                    console.log("您的浏览器不支持WebSocket");
-                }else{
-                    console.log("您的浏览器支持WebSocket");
-                    //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
-                    var socketUrl="http://localhost:80/websocket/"+userid;
-                    socketUrl=socketUrl.replace("https","ws").replace("http","ws");
-                    console.log(socketUrl);
-                    //在这里要将之前的会话连接先关闭销毁
-                    if(socket!=null){
-                        socket.close();
-                        socket=null;
-                    }
-                    //再建立新的会话连接
-                    socket = new WebSocket(socketUrl);
-                    //打开事件
-                    socket.onopen = function() {
-                        console.log("websocket已打开");
-                    };
-                    //关闭事件
-                    socket.onclose = function() {
-                        console.log("websocket已关闭");
-                    };
-                    //发生了错误事件
-                    socket.onerror = function() {
-                        console.log("websocket发生了错误");
-                    }
-                }
-
+//                if(typeof(WebSocket) == "undefined") {
+//                    console.log("您的浏览器不支持WebSocket");
+//                }else{
+//                    console.log("您的浏览器支持WebSocket");
+//                    //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
+//                    var socketUrl="http://localhost:80/websocket/"+userid;
+//                    socketUrl=socketUrl.replace("https","ws").replace("http","ws");
+//                    console.log(socketUrl);
+//                    //在这里要将之前的会话连接先关闭销毁
+//                    if(socket!=null){
+//                        socket.close();
+//                        socket=null;
+//                    }
+//                    //再建立新的会话连接
+//                    socket = new WebSocket(socketUrl);
+//                    //打开事件
+//                    socket.onopen = function() {
+//                        console.log("websocket已打开");
+//                    };
+//                    //关闭事件
+//                    socket.onclose = function() {
+//                        console.log("websocket已关闭");
+//                    };
+//                    //发生了错误事件
+//                    socket.onerror = function() {
+//                        console.log("websocket发生了错误");
+//                    }
+//                }
                 //对列表进行加载
                 var _this = this;
                 axios.post("/finishedJobs",this.user).then(res=>{

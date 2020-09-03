@@ -79,15 +79,19 @@ public class WebSocketServer {
             try {
                 //解析发送的报文
                 JSONObject jsonObject = JSON.parseObject(message);
+
+                if (jsonObject.getString("code").equals("2")){
+                    RequestController.result = jsonObject.getString("result");
+                }
                 //追加发送人（防止篡改）
                 //jsonObject.put("fromUserId",this.userId);
-                String toUserId = jsonObject.getString("toId");
+                //String toUserId = jsonObject.getString("toId");
                 //传送给对应的toUserId用户的webSocket
-                if (StringUtils.isNotBlank(toUserId)&&webSocketMap.containsKey(toUserId)){
-                    webSocketMap.get(toUserId).sendMessage(jsonObject.toJSONString());
-                }else {
-                    log.error("请求的userId:"+toUserId+"不在该服务器上");
-                }
+//                if (StringUtils.isNotBlank(toUserId)&&webSocketMap.containsKey(toUserId)){
+//                    webSocketMap.get(toUserId).sendMessage(jsonObject.toJSONString());
+//                }else {
+//                    log.error("请求的userId:"+toUserId+"不在该服务器上");
+//                }
             }catch (Exception e){
                 e.printStackTrace();
             }
