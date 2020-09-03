@@ -101,28 +101,28 @@ public class RequestController {
                 e.printStackTrace();
             }
 
+            int i = 0;
             //8.等待结果进行返回
             while (true){
                 try {
                     Thread.sleep(1);
+                    i ++ ;
                     if (result != null){
+                        //9.返回成功信息
+                        status = "200";
+                        message = "发起任务成功！";
+                        break;
+                    }else if (i>60000){
+                        //10.返回失败信息
                         break;
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-
-            //9.信息的返回
-            status = "200";
-            message = "发起任务成功！";
+            i = 0;
 
         }
-
-
-
-        //等待结果
-
 
         res.put("status",status);
         res.put("message",message);
