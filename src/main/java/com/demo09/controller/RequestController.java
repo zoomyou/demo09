@@ -52,6 +52,7 @@ public class RequestController {
 
         JSONObject res = new JSONObject();
         String status = "202", message = "无在线的打码用户请稍后重试！";
+        long requestTime = 0, receiveTime = 0, finishTime = 0;
 
         //1.获取文件的名称信息
         String originalFileName = photo.getOriginalFilename();
@@ -63,11 +64,12 @@ public class RequestController {
         //System.out.println(newFilePath);
         String src = newFilePath;
 
-        //2.为任务设置字段数据
+        //2.为任务设置字段数据（类型信息、文件路径、任务状态和请求时间）
         job.setSubtype_id(classInfo);
         job.setCaptcha_src(newFilePath);
         job.setJob_status("0");
         job.setRequest_time(new Timestamp(System.currentTimeMillis()));
+        requestTime = System.currentTimeMillis();
 
         //3.获取服务层的相应信息
         String judge = jobService.addJob(job);
@@ -97,6 +99,9 @@ public class RequestController {
                 tuisong.put("code","1");
                 tuisong.put("photo",photo);
                 WebSocketServer.webSocketMap.get(judge).sendMessage(JSON.toJSONString(tuisong));
+                receiveTime = System.currentTimeMillis();
+                //开始完成任务（向数据库插入记录）
+                jobService.startJob(job);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -106,16 +111,19 @@ public class RequestController {
             while (true){
                 try {
                     Thread.sleep(1);
-                    i ++ ;
-                    if (result != null){
+                    if (!result.equals("")){
                         //9.返回成功信息
+                        job.setCaptcha_result(result);
+                        finishTime = System.currentTimeMillis();
                         status = "200";
-                        message = "发起任务成功！";
+                        message = "任务识别成功！";
+                        res.put("mark",((receiveTime-finishTime)/1000)+"");
                         break;
                     }else if (i>60000){
                         //10.返回失败信息
                         break;
                     }
+                    i ++ ;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

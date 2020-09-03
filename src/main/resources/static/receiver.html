@@ -58,13 +58,13 @@
         methods:{
 //            接受任务开始计时
             receiveJob(){
-                axios.post("/unFinishedJob",this.user).then(res=>{
-                    this.job = res.data;
-                    console.log("ok")
-                    axios.post("/receiveJob",this.job).then(res=>{
-                        alert(res.data.message);
-                    })
-                })
+//                axios.post("/unFinishedJob",this.user).then(res=>{
+//                    this.job = res.data;
+//                    console.log("ok")
+//                    axios.post("/receiveJob",this.job).then(res=>{
+//                        alert(res.data.message);
+//                    })
+//                })
             },
 //            完成任务
             finishJob(){
@@ -128,7 +128,9 @@
                         console.log(msg.data);
                         var json = JSON.parse(msg.data);
                         //发现消息进入    开始处理前端触发逻辑
-                        document.querySelector("#captcha").innerHTML='<img width="150px" src='+json.msg+'>'
+                        if (json.code == "1"){
+                            document.querySelector("#captcha").innerHTML='<img width="150px" src='+json.photo+'>'
+                        }
                     };
                     //关闭事件
                     socket.onclose = function() {
