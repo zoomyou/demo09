@@ -26,7 +26,7 @@
                     <label for="captcha">验证码图片</label><div id="captcha"></div>
                 </div>
                 <div class="form-group">
-                    <label for="result">识别结果</label><input id="result" v-model="job.captcha_result" type="text">
+                    <label for="result">识别结果</label><input id="result"  type="text">
                 </div>
             </form>
         </div>
@@ -53,7 +53,6 @@
         el:"#wrap",
         data:{
             user:{},
-            job:{},
         },
         methods:{
 //            接受任务开始计时
@@ -68,17 +67,20 @@
             },
 //            完成任务
             finishJob(){
-                axios.post("/finishJob",this.job).then(res=>{
-                    if (res.data.status == "200"){
-                        alert(res.data.message);
-                        this.job = {};
-                        console.log(this.job);
-                        document.querySelector("#captcha").innerHTML=''
-                        location.replace();
-                    }else {
-                        alert(res.data.message);
-                    }
-                })
+//                axios.post("/finishJob",this.job).then(res=>{
+//                    if (res.data.status == "200"){
+//                        alert(res.data.message);
+//                        this.job = {};
+//                        console.log(this.job);
+//                        document.querySelector("#captcha").innerHTML=''
+//                        location.replace();
+//                    }else {
+//                        alert(res.data.message);
+//                    }
+//                })
+                var result = document.querySelector("#result").innerText;
+                var s = JSON.stringify({code:"2",result:result})
+                socket.send(s)
             },
 //            安全退出
             logout(){
