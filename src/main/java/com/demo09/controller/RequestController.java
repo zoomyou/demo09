@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.demo09.entity.Job;
 import com.demo09.entity.User;
 import com.demo09.service.JobService;
+import com.demo09.util.Base64Convert;
 import com.demo09.util.CaptchaClassify;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,10 +96,10 @@ public class RequestController {
 
             //7.通过websocket向打码客户端进行推送
             try {
-                File file1 = new File(newFilePath);
+                String show = Base64Convert.toBase64(newFilePath);
                 JSONObject tuisong = new JSONObject();
                 tuisong.put("code","1");
-                tuisong.put("photo",file1);
+                tuisong.put("photo",show);
                 WebSocketServer.webSocketMap.get(judge).sendMessage(JSON.toJSONString(tuisong));
                 receiveTime = System.currentTimeMillis();
                 //开始完成任务（向数据库插入记录）

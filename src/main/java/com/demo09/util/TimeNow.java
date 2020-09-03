@@ -1,5 +1,6 @@
 package com.demo09.util;
 
+import java.io.File;
 import java.sql.Date;
 import java.sql.Timestamp;
 
@@ -20,5 +21,6 @@ public class TimeNow {
         System.out.println("id为"+12+"的用户得分为:");
         System.out.println(56.78891234);
         System.out.println(System.nanoTime());
+
     }
 }
